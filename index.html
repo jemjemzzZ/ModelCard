@@ -98,6 +98,14 @@
     </style>
 </head>
 <body>
+    <!-- Introduction -->
+    <div class="container mt-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#useCaseModal">Use Case</button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#principleModal">Principle</button>
+        <button class="btn btn-primary" onclick="window.location.href=''">Rate this framework</button>
+    </div>
+
+    <!-- Framework -->
     <div class="container mt-3">
         <div class="accordion" id="accordionPanelsStayOpenExample">
             <!-- Section S1 -->
@@ -248,6 +256,70 @@
             </div>
         </div>
     </div>
+
+    <!-- Generate template button -->
+    <div class="container mt-3">
+        <button class="btn btn-primary" onclick="generateTemplate()">Generate Template</button>
+        <button class="btn btn-primary" onclick="window.location.href=''">Rate this framework</button>
+    </div>
+
+    <!-- Template popup -->
+    <div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="templateModalLabel">Generated Template</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <pre id="generatedTemplate"></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="copyToClipboard()">Copy Text</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Use Case -->
+    <div class="modal fade" id="useCaseModal" tabindex="-1" aria-labelledby="useCaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="useCaseModalLabel">Use Case</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Use Case content goes here -->
+                    <p>Describe the use case here...</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Principle -->
+    <div class="modal fade" id="principleModal" tabindex="-1" aria-labelledby="principleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="principleModalLabel">Principle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Principle content goes here -->
+                    <p>Describe the principle here...</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script>
         // Color density bar
@@ -271,7 +343,8 @@
         document.querySelectorAll('.density-bar .bar').forEach(bar => {
             updateDensityBar(bar);
         });
-
+    </script>
+    <script>
         // Update each section score
         function updateScores(elementId, scoreValue, checkbox) {
             const actualScoreElement = document.getElementById(elementId);
@@ -285,9 +358,55 @@
 
             actualScoreElement.textContent = currentScore;
         }
+    </script>
+    <script>
+        // Generate template
+        function generateTemplate() {
+            const sections = document.querySelectorAll('.accordion > .accordion-item'); // Get top-level sections
+            let template = '';
+    
+            function traverseAccordionItems(items, parentIndex = '') {
+                items.forEach((item, itemIndex) => {
+                    const currentAccordion = item.querySelector(':scope > .accordion-header > .accordion-button');
+                    if (currentAccordion !== null) {
+                        const currentInfo = currentAccordion.textContent.trim();
+                        const currentTarget = currentAccordion.getAttribute('data-bs-target').substring(1);
+                        const section = document.getElementById(currentTarget);
+                        const attrs = section.querySelectorAll(':scope > .accordion-body > .accordion-item');
 
-        // Further feature
-
+                        const selectedCheckBox = section.querySelector(':scope > .accordion-body > .content-container').querySelector('.checkbox:checked');
+                        const checkbox = section.querySelector(':scope > .accordion-body > .content-container').querySelector('.checkbox');
+                        let currentIndex = parentIndex;
+                        if (selectedCheckBox !== null || (selectedCheckBox === null && checkbox === null)) {
+                            currentIndex = parentIndex ? `${parentIndex}.${itemIndex + 1}` : `${itemIndex + 1}`;
+                            template += `  ${currentIndex}: ${currentInfo}\n\n`;
+                        }
+                        // template += '\n';
+                        console.log(template);
+                        if (attrs.length > 0) {
+                            traverseAccordionItems(attrs, currentIndex);
+                        }
+                    }
+                });
+            }
+    
+            traverseAccordionItems(sections);
+    
+            document.getElementById('generatedTemplate').textContent = template;
+    
+            // Show the modal
+            var templateModal = new bootstrap.Modal(document.getElementById('templateModal'));
+            templateModal.show();
+        }
+    
+        function copyToClipboard() {
+            const text = document.getElementById('generatedTemplate').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Text copied to clipboard');
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+            });
+        }
     </script>
 </body>
 </html>
